@@ -1,0 +1,19 @@
+# Runtime deps (just for base case)
+fastapi
+uvicorn
+httpx
+pydantic
+numpy
+pandas
+# add as needed
+# polars
+# sqlalchemy
+# psycopg[binary]
+# openai
+# langchain
+# chromadb
+# llama-index
+# ragstack
+# datasets
+# transformers
+# torch
