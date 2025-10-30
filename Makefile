@@ -1,3 +1,4 @@
+.ONESHELL:
 SHELL := /bin/bash
 VENV_BIN := /opt/venv/bin
 PY := $(VENV_BIN)/python
@@ -5,17 +6,21 @@ PIP := $(VENV_BIN)/pip
 PIP_COMPILE := $(VENV_BIN)/pip-compile
 PIP_SYNC := $(VENV_BIN)/pip-sync
 
-bootstrap:
-    @echo "Compiling requirements..."
+bootstrap: dependencies
+	echo "Initializing environment..."
+	chmod +x ./.devcontainer/entrypoint.sh
+	./.devcontainer/entrypoint.sh
+	echo "Bootstrap complete."
+
+dependencies:
+	echo "Compiling requirements..."
 	$(PIP_COMPILE) ./.devcontainer/requirements.in -o requirements.txt
 	$(PIP_COMPILE) ./.devcontainer/requirements-dev.in -o requirements-dev.txt
-	@echo "Installing requirements..."
+	echo "Installing requirements..."
 	$(PIP) install -r requirements.txt -r requirements-dev.txt
 	$(PIP) install -e .
 	pre-commit install
-	@echo "Initializing environment..."
-	chmod +x ./devcontainer/entrypoint.sh
-	./devcontainer/entrypoint.sh
+
 
 lock:
 	$(PIP_COMPILE) ./.devcontainer/requirements.in      -o requirements.txt

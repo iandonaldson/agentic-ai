@@ -2,9 +2,11 @@
   "name": "py-ds-llm-env",
 
 
-  "build": { 
+  "build": {
     "dockerfile": "Dockerfile",
-    "context": "."
+    "context": ".",
+    "args": {},
+    "options": ["-t", "fastapi-postgres-service"]
   },
 
   "features": {
@@ -29,5 +31,3 @@
   },
   "postCreateCommand": "make bootstrap"
 }
-
-
