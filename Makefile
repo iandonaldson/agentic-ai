@@ -9,6 +9,7 @@ bootstrap:
 	$(PIP_COMPILE) ./.devcontainer/requirements.in -o requirements.txt
 	$(PIP_COMPILE) ./.devcontainer/requirements-dev.in -o requirements-dev.txt
 	$(PIP) install -r requirements.txt -r requirements-dev.txt
+	$(PIP) install -e .
 	pre-commit install
 
 lock:
@@ -19,7 +20,7 @@ sync:
 	$(PIP_SYNC) requirements.txt requirements-dev.txt
 
 test:
-	pytest
+	PYTHONPATH=. pytest
 
 lint:
 	ruff check .
