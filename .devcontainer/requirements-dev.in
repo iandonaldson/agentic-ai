@@ -1,4 +1,6 @@
-# === Python basic 
+-r requirements.in
+
+# === Python basic
 pytest
 pytest-cov
 ruff
@@ -47,5 +49,3 @@ jinja2
 psycopg2-binary
 scikit-learn
 Wikipedia
-
-
