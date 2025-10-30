@@ -20,9 +20,10 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Upgrade pip + install build tooling + pip-tools
-# note the explicit path to the venv
-RUN /opt/venv/bin/pip install --upgrade pip wheel setuptools pip-tools
+# Upgrade pip to a stable known-compatible version and install build tooling + pip-tools
+# pin pip to avoid incompatibilities between very-new pip internals and pip-tools
+# (pip 25+ changes internal APIs that some pip-tools releases are not yet compatible with)
+RUN /opt/venv/bin/pip install --upgrade pip==23.2.1 wheel setuptools pip-tools
 
 # Compile lock files and install will be run by Makefile (make bootstrap)
 # as part of the postCreateCommand.  

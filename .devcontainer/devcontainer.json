@@ -20,7 +20,11 @@
         "ms-toolsai.jupyter",
         "charliermarsh.ruff",
         "github.vscode-github-actions"
-      ]
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "python.terminal.activateEnvironment": true
+      }
     }
   },
   "postCreateCommand": "make bootstrap"
