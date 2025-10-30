@@ -39,9 +39,6 @@ RUN /opt/venv/bin/pip install --upgrade pip==23.2.1 wheel setuptools pip-tools
 # make lock && make sync.
 # For production, construct a new Dockerfile based of the final configuration.
 
-# Prepare entrypoint script for execution (as part of postCreateCommand - see devcontainer.json)
-RUN chmod +x .devcontainer/entrypoint.sh
-
 # Expose ports
 EXPOSE 8000
 EXPOSE 5432
