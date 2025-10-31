@@ -171,7 +171,7 @@ Optional (if you want to override defaults done by the entrypoint):
 
 ## Build & Run
 
-### Option 1: Using Makefile (Recommended for Development)
+### Using Makefile (Recommended)
 
 After setting up your `.env` file with API keys:
 
@@ -190,36 +190,6 @@ make help
 ```
 
 The web interface will be available at the forwarded port (in Codespaces) or http://localhost:8000
-
-### Option 2: Docker (Local/Production)
-
-#### 1) Build
-
-```bash
-docker build -t fastapi-postgres-service .
-```
-
-#### 2) Run (foreground)
-
-```bash
-docker run --rm -it  -p 8000:8000  -p 5432:5432  --name fpsvc  --env-file .env  fastapi-postgres-service
-```
-
-You should see logs like:
-
-```
-🚀 Starting Postgres cluster 17/main...
-✅ Postgres is ready
-CREATE ROLE
-CREATE DATABASE
-🔗 DATABASE_URL=postgresql://app:local@127.0.0.1:5432/appdb
-INFO:     Uvicorn running on http://0.0.0.0:8000
-```
-
-#### 3) Open the app
-
-* UI: [http://localhost:8000/](http://localhost:8000/)
-* Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
@@ -250,32 +220,45 @@ curl http://localhost:8000/task_status/<TASK_ID>
 
 ## Troubleshooting
 
+**`curl: (7) Failed to connect to localhost port 8000` or connection refused errors**
+
+* This means the web service isn't running. Check service status:
+  ```bash
+  make status
+  ```
+* If the web service shows "❌ Not running", start it:
+  ```bash
+  make start     # Runs in foreground (occupies terminal)
+  # OR run in background:
+  nohup make start > /tmp/fastapi.log 2>&1 &
+  ```
+* **Note**: `make start` runs in foreground by design for development. Use a separate terminal for other commands, or run in background as shown above.
+
 **I open [http://localhost:8000](http://localhost:8000) and see nothing / errors**
 
-* Confirm `templates/index.html` exists inside the container:
-
+* Confirm `templates/index.html` exists in the project:
   ```bash
-  docker exec -it fpsvc bash -lc "ls -l /app/templates && ls -l /app/static || true"
+  ls -l templates/ && ls -l static/ || true
   ```
-* Watch logs while you load the page:
-
+* Check the application logs:
   ```bash
-  docker logs -f fpsvc
+  tail -f /tmp/fastapi.log  # If running in background
   ```
 
-**Container asks for a Postgres password on startup**
+**PostgreSQL connection issues**
 
-* The entrypoint uses **UNIX socket + peer auth** for admin tasks (no password).
-  Ensure you’re not calling `psql -h 127.0.0.1 -U postgres` in the script—use:
-
+* Check if PostgreSQL is running:
   ```bash
-  su -s /bin/bash postgres -c "psql -c '...'"
+  make status
+  ```
+* Start PostgreSQL if needed:
+  ```bash
+  make start-db  # If this target exists, or just use make start
   ```
 
 **`DATABASE_URL not set` error**
 
-* The entrypoint exports a default DSN. If you overrode it, ensure it’s valid:
-
+* The application sets a default DSN for development. If you overrode it, ensure it's valid:
   ```
   postgresql://<user>:<password>@<host>:<port>/<database>
   ```
@@ -284,7 +267,6 @@ curl http://localhost:8000/task_status/<TASK_ID>
 
 * In your `main.py` you call `Base.metadata.drop_all(...)` on startup.
   Comment it out or guard with an env flag:
-
   ```python
   if os.getenv("RESET_DB_ON_STARTUP") == "1":
       Base.metadata.drop_all(bind=engine)
@@ -305,7 +287,7 @@ TAVILY_API_KEY=your-tavily-api-key
 
 ## Development tips
 
-### Using the Makefile (Recommended)
+### Using the Makefile
 
 * **One-command startup**: `make start`
 * **Quick restart during development**: `make restart`
@@ -314,19 +296,9 @@ TAVILY_API_KEY=your-tavily-api-key
 * **Clean shutdown**: `make stop` (web service only) or `make stop-all` (everything)
 * **View all commands**: `make help`
 
-### Manual Docker Development
+### Database Connection
 
-* **Hot reload** (optional): For dev, you can run Uvicorn with `--reload` if you mount your code:
-
-  ```bash
-  docker run --rm -it -p 8000:8000 -p 5432:5432 \
-    -v "$PWD":/app \
-    --name fpsvc fastapi-postgres-service \
-    bash -lc "pg_ctlcluster \$(psql -V | awk '{print \$3}' | cut -d. -f1) main start && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
-  ```
-
-* **Connect to DB from host:**
-
+* **Connect to DB directly:**
   ```bash
   psql "postgresql://app:local@localhost:5432/appdb"
   ```
