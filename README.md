@@ -1,10 +1,13 @@
 # agentic-ai
 
-This codebase is a version of [Agentic AI Public](https://github.com/https-deeplearning-ai/agentic-ai-public/tree/main) from deeplearning.ai refactored to follow the dev pattern in the [reproducible-dev-environments](https://github.com/iandonaldson/reproducible-dev-environments)
-project.  This project is intended to facilitate reproducible dev environment via **devcontainer + venv + pip-tools**. Designed for **GitHub Codespaces** and portable to other clouds.
+This codebase is a refactored version of [Agentic AI Public](https://github.com/https-deeplearning-ai/agentic-ai-public/tree/main) from deeplearning.ai refactored to follow the dev pattern in the [reproducible-dev-environments](https://github.com/iandonaldson/reproducible-dev-environments)
+project.  This project is intended to facilitate reproducible dev environment via **devcontainer + venv + pip-tools**. Project metadata is handled by **pyproject.toml**.  Designed for **GitHub Codespaces** and portable to other clouds.
 
-
-
+Original authors of the Agentic AI Public project are:
+* [Elías D. Niño-Ruiz](https://github.com/enino84)
+* [Andres Zartab](https://github.com/andres-zartab)
+* [Tommy Nelson](https://github.com/madeinglasgow)
+* [Ryan](https://github.com/ryanchentw)
 
 ## Quickstart (Codespaces)
 
@@ -76,10 +79,20 @@ This repo includes a Docker setup that runs **Postgres + the API in one containe
 
 ---
 
+## Container setup process in more detail
+
+* This repo reconfigures the original to be compatible with GitHub Codespaces.
+* The setup is defined by .devcontainer/devcontainer.json which in turn . . .
+* Builds a container based on .devcontainer/Dockerfile
+* Sets up a virtual environment in which to build dependencies
+* Calls a postCreateCommand: "make bootstrap" based on the Makefile which in turn . . .
+* Compiles requirements based on .devcontainer/requirements[-dev].in and
+* Writes requirements.txt and requirements-dev.txt and
+* Installs requirements in the virtual environment and
+* Runs the .devcontainer/entrypoint.sh script which in turn . . .
+* Sets up the PostgresSQL database and FastAPI on ports 5432 and 8000 respectively.
+
 ## Prerequisites
-
-* **Docker** (Desktop on Windows/macOS, or engine on Linux).
-
 
 * API keys stored in a `.env` file:
 
@@ -87,6 +100,7 @@ This repo includes a Docker setup that runs **Postgres + the API in one containe
   OPENAI_API_KEY=your-open-api-key
   TAVILY_API_KEY=your-tavily-api-key
   ```
+> Copy the .env_example file to .env in your dev environment and add real keys.
 
 * Python deps are installed by Docker from `requirements.txt`:
 
