@@ -52,6 +52,10 @@ class Task(Base):
 def init_database():
     """Initialize database tables. Only called when running directly."""
     try:
+        # Note: dropping all tables automatically is dangerous for running
+        # environments. Keep this behavior only when explicitly invoked.
+        # The startup path uses create_all() safely (no drop) to ensure
+        # missing tables are created without destroying data.
         Base.metadata.drop_all(bind=engine)
     except Exception as e:
         print(f"❌ DB drop failed: {e}")
@@ -62,9 +66,29 @@ def init_database():
         print(f"❌ DB creation failed: {e}")
 
 
+# Ensure tables exist when the application starts under Uvicorn/ASGI.
+# This creates missing tables but does not drop existing data.
+# The startup handler is defined further down after `app` is created.
+
+
 # === FastAPI ===
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+@app.on_event("startup")
+def _create_tables_on_startup():
+    """Ensure database tables exist when the ASGI app starts.
+
+    This is idempotent and will create missing tables without dropping
+    existing data. It is safe for development and Codespaces runs where
+    we want the schema present automatically.
+    """
+    if engine is None:
+        return
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Ensured database tables exist")
+    except Exception as exc:
+        print(f"❌ Failed to ensure database tables: {exc}")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "🚀 Setting up PostgreSQL database..."
+
 # --- Start Debian's default Postgres cluster ---
 PG_MAJOR="$(psql -V | awk '{print $3}' | cut -d. -f1)"
 echo "🚀 Starting Postgres cluster ${PG_MAJOR}/main..."
@@ -20,23 +22,19 @@ done
 : "${POSTGRES_PASSWORD:=local}"
 : "${POSTGRES_DB:=appdb}"
 
-
 # Creates role if it does not exist
 if ! su -s /bin/bash postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER}'\"" | grep -q 1; then
   su -s /bin/bash postgres -c "psql -c \"CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';\""
+  echo "✅ Created database user: ${POSTGRES_USER}"
 fi
 
 # Creates DB if does not exist
 if ! su -s /bin/bash postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}'\"" | grep -q 1; then
   su -s /bin/bash postgres -c "psql -c \"CREATE DATABASE ${POSTGRES_DB} OWNER ${POSTGRES_USER};\""
+  echo "✅ Created database: ${POSTGRES_DB}"
 fi
 
-# Define DNS for app
+# Define DSN for app
 export DATABASE_URL="${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB}}"
 echo "🔗 DATABASE_URL=${DATABASE_URL}"
-
-# Ensure virtual environment is active
-export PATH="/opt/venv/bin:$PATH"
-
-# Launch FastAPI
-exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+echo "🎉 Database setup complete!"

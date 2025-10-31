@@ -62,6 +62,10 @@ make stop          # Stop web service only
 make stop-all      # Stop web service and database
 make status        # Check service status
 make update        # Show outdated packages
+make docker-build  # Build Docker images for development and production
+make docker-dev    # Run development environment with Docker
+make docker-prod   # Run production environment with Docker
+make docker-clean  # Clean up Docker resources
 ```
 
 
@@ -171,7 +175,7 @@ Optional (if you want to override defaults done by the entrypoint):
 
 ## Build & Run
 
-### Using Makefile (Recommended)
+### Option 1: Using Makefile (Recommended for Codespaces)
 
 After setting up your `.env` file with API keys:
 
@@ -190,6 +194,46 @@ make help
 ```
 
 The web interface will be available at the forwarded port (in Codespaces) or http://localhost:8000
+
+### Option 2: Using Docker (Standalone Deployment)
+
+#### Development with Docker Compose
+
+```bash
+# Build and run development environment (includes PostgreSQL)
+make docker-dev
+
+# Or manually:
+docker-compose --profile dev up --build
+```
+
+#### Production with Docker Compose
+
+```bash
+# Run production environment with external database
+make docker-prod
+
+# Or manually:
+docker-compose --profile prod up -d
+```
+
+#### Standalone Docker (Advanced)
+
+```bash
+# Build images (automatically generates requirements.txt from .in files)
+make docker-build
+
+# Run development (includes database)
+docker run --rm -it -p 8000:8000 -p 5432:5432 \
+  --env-file .env agentic-ai:dev
+
+# Run production (requires external database)
+docker run --rm -p 8000:8000 \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
+  agentic-ai:prod
+```
+
+**Note**: The Docker build process automatically generates `requirements.txt` and `requirements-dev.txt` from the source `.in` files during the build, maintaining the deterministic pip-tools workflow.
 
 ---
 

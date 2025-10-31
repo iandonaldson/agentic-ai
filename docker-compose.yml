@@ -1,0 +1,54 @@
+# Docker Compose for both development and production
+version: '3.8'
+
+services:
+  # Development setup (includes PostgreSQL)
+  app-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8000:8000"
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://app:local@127.0.0.1:5432/appdb
+    volumes:
+      # Mount source code for hot reload in development
+      - .:/app
+      - postgres_data_dev:/var/lib/postgresql/data
+    profiles:
+      - dev
+
+  # Production setup (external database)
+  app-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:pass@db:5432/appdb}
+    depends_on:
+      - db
+    profiles:
+      - prod
+
+  # External PostgreSQL for production
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=local
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    profiles:
+      - prod
+
+volumes:
+  postgres_data_dev:
+  postgres_data_prod:

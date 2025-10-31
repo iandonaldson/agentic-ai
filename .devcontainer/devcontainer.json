@@ -3,10 +3,11 @@
 
 
   "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".",
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "target": "development",
     "args": {},
-    "options": ["-t", "fastapi-postgres-service"]
+    "options": ["-t", "agentic-ai:dev"]
   },
 
   "features": {
@@ -29,5 +30,5 @@
       }
     }
   },
-  "postCreateCommand": "make bootstrap"
+  "postCreateCommand": "make bootstrap-codespace"
 }

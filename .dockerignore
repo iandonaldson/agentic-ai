@@ -1,0 +1,62 @@
+# Git and version control
+.git
+.gitignore
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Generated requirements files (built during Docker build)
+requirements.txt
+requirements-dev.txt
+
+# Development files
+.env
+.env_example
+*.log
+/tmp/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+README.md
+*.md
+
+# Development containers (don't include in standalone builds)
+# In Codespaces/devcontainer builds we need a few files from `.devcontainer/` (entrypoint, setup, requirements).
+# Keep the folder excluded by default, but re-include only the files needed when building the dev image.
+.devcontainer/
+.devcontainer_orig/
+
+# Re-include devcontainer build assets required by Docker build
+!.devcontainer/
+!.devcontainer/entrypoint.sh
+!.devcontainer/setup-db.sh
+!.devcontainer/requirements.in
+!.devcontainer/requirements-dev.in
+!.devcontainer/devcontainer.json
+!.devcontainer/Dockerfile
+
+# Test artifacts
+.coverage
+htmlcov/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
