@@ -14,20 +14,21 @@ Original authors of the Agentic AI Public project are:
 1. **Open in Codespaces** - the devcontainer builds automatically.
 2. **Bootstrap environment** - dependencies are compiled & installed via `make bootstrap` (triggered by `postCreateCommand`).
 3. **Set up API keys** - copy `.env_example` to `.env` and add your OpenAI and Tavily API keys.
-4. **Start services** - `make restart-dev` (starts PostgreSQL + FastAPI with auto-reload)
+4. **Start services** - `make start` (starts PostgreSQL + FastAPI with auto-reload)
 5. **Access the app** - open the forwarded port URL (e.g., https://your-codespace-8000.app.github.dev/)
 6. **Run tests** - `make test`
 7. **Check code quality** - `make lint`
 
-### Service Management Commands
+### Essential Service Management Commands
 
 ```bash
-make help          # Show all available commands
+make help          # Show all available commands with service management overview
+make start         # Start web service with database (one-command startup)
+make restart       # Restart web service (quick restart for development)
+make restart-all   # Stop and restart everything including database
+make stop          # Stop web service only
+make stop-all      # Stop web service and database
 make status        # Check service status
-make restart-dev   # Restart with development reload (recommended)
-make restart       # Quick restart
-make stop          # Stop web service
-make start         # Start with database setup
 ```
 
 ## Dependency Workflow During Development
@@ -38,7 +39,7 @@ A number of Makefile targets have been added to facilitate this process.
 - **Add a dependency** to `.devcontainer/requirements.in` (or `.devcontainer/requirements-dev.in`).
 - **Rebuild lock files**: `make lock`
 - **Sync the environment**: `make sync`
-- **Restart services**: `make restart-dev` (to pick up new dependencies)
+- **Restart services**: `make restart` (to pick up new dependencies)
 - **Test your changes**: `make test` and `make lint`
 - **Commit**: `requirements.in`, `requirements-dev.in`, and the generated lock files (`requirements.txt`, `requirements-dev.txt`) once validated.
 
@@ -47,18 +48,20 @@ This ensures a deterministic build for anyone checking out your code.
 ### Available Make Commands
 
 ```bash
-make help          # Show all available commands
+make help          # Show all available commands with service overview
 make bootstrap     # Initialize development environment
 make dependencies  # Install and compile dependencies
 make lock          # Update dependency lock files
 make sync          # Sync environment with lock files
 make test          # Run test suite
 make lint          # Run code linting
-make restart-dev   # Restart services with auto-reload
-make restart       # Quick restart
-make stop          # Stop services
-make start         # Start with database setup
+make start         # Start web service with database (one-command startup)
+make restart       # Restart web service (quick restart for development)
+make restart-all   # Stop and restart everything including database
+make stop          # Stop web service only
+make stop-all      # Stop web service and database
 make status        # Check service status
+make update        # Show outdated packages
 ```
 
 
@@ -74,20 +77,19 @@ This repo includes a Docker setup that runs **Postgres + the API in one containe
 * `/generate_report` kicks off a threaded, multi-step agent workflow (planner → research/writer/editor).
 * `/task_progress/{task_id}` live status for each step/substep.
 * `/task_status/{task_id}` final status + report.
+* `/healthz` and `/api` health check endpoints for monitoring.
+* `/add` simple addition endpoint for testing.
 
 ---
 
 ## Project layout (key paths)
 
 ```
-├─ main.py                      # FastAPI app with database, agents coordination
+├─ main.py                      # FastAPI app with database, agents coordination, and API endpoints
 ├─ src/
 │  ├─ planning_agent.py         # planner_agent(), executor_agent_step() - orchestrates workflow
 │  ├─ agents.py                 # research_agent, writer_agent, editor_agent - AI agents
-│  ├─ research_tools.py         # tavily_search_tool, arxiv_search_tool, wikipedia_search_tool
-│  └─ your_project/             # placeholder example code (see make test in Makefile)
-│     ├─ __init__.py
-│     └─ app.py                 # example app placeholder
+│  └─ research_tools.py         # tavily_search_tool, arxiv_search_tool, wikipedia_search_tool
 ├─ templates/
 │  └─ index.html                # Main UI page rendered by "/"
 ├─ static/                      # Static assets (logos and images)
@@ -98,11 +100,12 @@ This repo includes a Docker setup that runs **Postgres + the API in one containe
 │  └─ wikipedia_logo.png
 ├─ .devcontainer/
 │  ├─ Dockerfile               # Development container setup
-├─ ├─ requirement-dev.in       # Editable requirements for development - see Makefile
-├─ ├─ requirement.in           # Editable requirements for production  - see Makefile
+│  ├─ requirements-dev.in      # Editable requirements for development - see Makefile
+│  ├─ requirements.in          # Editable requirements for production  - see Makefile
 │  └─ entrypoint.sh            # Container initialization script
 ├─ tests/
-│  └─ test_app.py              # Unit tests
+│  ├─ test_app.py              # FastAPI endpoint tests
+│  └─ test_planning_agent.py   # Planning agent tests
 ├─ requirements.txt            # Production dependencies - autogenerated by Makefile and requirements.in
 ├─ requirements-dev.txt        # Development dependencies - autogenerated by Makefile and requirements-dev.in
 ├─ pyproject.toml              # Project configuration
@@ -174,10 +177,13 @@ After setting up your `.env` file with API keys:
 
 ```bash
 # Start services (PostgreSQL + FastAPI with auto-reload)
-make restart-dev
+make start
 
 # Check status
 make status
+
+# Restart during development
+make restart
 
 # View all available commands
 make help
@@ -301,9 +307,11 @@ TAVILY_API_KEY=your-tavily-api-key
 
 ### Using the Makefile (Recommended)
 
-* **Quick restart during development**: `make restart-dev`
+* **One-command startup**: `make start`
+* **Quick restart during development**: `make restart`
+* **Full restart (including database)**: `make restart-all`
 * **Check what's running**: `make status`
-* **Clean shutdown**: `make stop`
+* **Clean shutdown**: `make stop` (web service only) or `make stop-all` (everything)
 * **View all commands**: `make help`
 
 ### Manual Docker Development

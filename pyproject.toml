@@ -1,7 +1,7 @@
 [project]
-name = "your-project"
+name = "agentic-ai"
 version = "0.1.0"
-description = "DS/LLM project scaffold with reproducible env (.devcontainer + venv + pip-tools)"
+description = "Multi-agent AI research system with FastAPI, PostgreSQL, and reproducible dev environment"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Ian Donaldson" }]
