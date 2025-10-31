@@ -11,19 +11,55 @@ Original authors of the Agentic AI Public project are:
 
 ## Quickstart (Codespaces)
 
-1. Open in Codespaces; the devcontainer builds automatically.
-2. Dependencies are compiled & installed via `make bootstrap` (triggered by `postCreateCommand`).
-3. Run tests: `make test`
-4. Lint & type-check: `make lint`
-5. Start API: `make run` then open <http://localhost:8000/healthz>
+1. **Open in Codespaces** - the devcontainer builds automatically.
+2. **Bootstrap environment** - dependencies are compiled & installed via `make bootstrap` (triggered by `postCreateCommand`).
+3. **Set up API keys** - copy `.env_example` to `.env` and add your OpenAI and Tavily API keys.
+4. **Start services** - `make restart-dev` (starts PostgreSQL + FastAPI with auto-reload)
+5. **Access the app** - open the forwarded port URL (e.g., https://your-codespace-8000.app.github.dev/)
+6. **Run tests** - `make test`
+7. **Check code quality** - `make lint`
 
-## Dependency Workflow
+### Service Management Commands
 
-- Add a dependency to `requirements.in` (or `requirements-dev.in`).
-- Rebuild lock files: `make lock`
-- Sync the environment: `make sync`
-- Commit: `requirements.in`, `requirements-dev.in`, and then the lock files that get made by `make lock` (requirements.txt and requirements-dev.txt) once they have been validated.
-- This makes a determinative build for the next person checking out your code and trying to reproduce your work.
+```bash
+make help          # Show all available commands
+make status        # Check service status
+make restart-dev   # Restart with development reload (recommended)
+make restart       # Quick restart
+make stop          # Stop web service
+make start         # Start with database setup
+```
+
+## Dependency Workflow During Development
+
+If you use this repository for continued development, you may wish to add additional dependencies.
+A number of Makefile targets have been added to facilitate this process.
+
+- **Add a dependency** to `.devcontainer/requirements.in` (or `.devcontainer/requirements-dev.in`).
+- **Rebuild lock files**: `make lock`
+- **Sync the environment**: `make sync`
+- **Restart services**: `make restart-dev` (to pick up new dependencies)
+- **Test your changes**: `make test` and `make lint`
+- **Commit**: `requirements.in`, `requirements-dev.in`, and the generated lock files (`requirements.txt`, `requirements-dev.txt`) once validated.
+
+This ensures a deterministic build for anyone checking out your code.
+
+### Available Make Commands
+
+```bash
+make help          # Show all available commands
+make bootstrap     # Initialize development environment
+make dependencies  # Install and compile dependencies
+make lock          # Update dependency lock files
+make sync          # Sync environment with lock files
+make test          # Run test suite
+make lint          # Run code linting
+make restart-dev   # Restart services with auto-reload
+make restart       # Quick restart
+make stop          # Stop services
+make start         # Start with database setup
+make status        # Check service status
+```
 
 
 ---
@@ -130,15 +166,34 @@ Optional (if you want to override defaults done by the entrypoint):
 
 ---
 
-## Build & Run (local/dev)
+## Build & Run
 
-### 1) Build
+### Option 1: Using Makefile (Recommended for Development)
+
+After setting up your `.env` file with API keys:
+
+```bash
+# Start services (PostgreSQL + FastAPI with auto-reload)
+make restart-dev
+
+# Check status
+make status
+
+# View all available commands
+make help
+```
+
+The web interface will be available at the forwarded port (in Codespaces) or http://localhost:8000
+
+### Option 2: Docker (Local/Production)
+
+#### 1) Build
 
 ```bash
 docker build -t fastapi-postgres-service .
 ```
 
-### 2) Run (foreground)
+#### 2) Run (foreground)
 
 ```bash
 docker run --rm -it  -p 8000:8000  -p 5432:5432  --name fpsvc  --env-file .env  fastapi-postgres-service
@@ -155,7 +210,7 @@ CREATE DATABASE
 INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-### 3) Open the app
+#### 3) Open the app
 
 * UI: [http://localhost:8000/](http://localhost:8000/)
 * Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -243,6 +298,15 @@ TAVILY_API_KEY=your-tavily-api-key
 ---
 
 ## Development tips
+
+### Using the Makefile (Recommended)
+
+* **Quick restart during development**: `make restart-dev`
+* **Check what's running**: `make status`
+* **Clean shutdown**: `make stop`
+* **View all commands**: `make help`
+
+### Manual Docker Development
 
 * **Hot reload** (optional): For dev, you can run Uvicorn with `--reload` if you mount your code:
 
